@@ -17,16 +17,47 @@ jobs:
     - name: Install ShellCheck
       run: sudo apt-get install -y shellcheck
 
-    - name: Run ShellCheck and Save Results
+    - name: Run ShellCheck and Save JSON Results
       run: |
         mkdir -p output
         find . -name "*.sh" -print0 | xargs -0 shellcheck -f json > output/results.json
 
-    - name: Install sarif-tools
-      run: npm install -g sarif-tools
-
     - name: Convert ShellCheck JSON to SARIF
-      run: sarif-tools from-shellcheck -i output/results.json -o output/results.sarif
+      run: |
+        jq -n \
+          --argjson input "$(cat output/results.json)" \
+          '{
+            "version": "2.1.0",
+            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "ShellCheck",
+                    "informationUri": "https://www.shellcheck.net/",
+                    "version": "v0.7.2",
+                    "rules": $input.comments | map({
+                      "id": .code,
+                      "shortDescription": {"text": .message},
+                      "helpUri": ("https://www.shellcheck.net/wiki/" + .code)
+                    })
+                  }
+                },
+                "results": $input.comments | map({
+                  "ruleId": .code,
+                  "message": {"text": .message},
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {"uri": .file},
+                        "region": {"startLine": .line, "startColumn": .column}
+                      }
+                    }
+                  ]
+                })
+              }
+            ]
+          }' > output/results.sarif
 
     - name: Install shfmt
       run: |
