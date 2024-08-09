@@ -14,8 +14,8 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4.1.1
 
-    - name: Install Rust
-      uses: actions-rs/toolchain@v2
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
         components: cargo
