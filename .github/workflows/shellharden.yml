@@ -14,34 +14,24 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4.1.1
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y curl
+    - name: Install Rust
+      uses: actions-rs/toolchain@v2
+      with:
+        toolchain: stable
+        components: cargo
 
-    - name: Download shellharden
+    - name: Build shellharden from source
       run: |
-        curl -LO https://github.com/anordal/shellharden/releases/download/v4.0.0/shellharden-linux-x86_64
-        ls -l shellharden-linux-x86_64
-        file shellharden-linux-x86_64
-        # Display the first few bytes of the file to check its content
-        head -c 20 shellharden-linux-x86_64
-
-    - name: Install shellharden
-      run: |
-        chmod +x shellharden-linux-x86_64
-        mv shellharden-linux-x86_64 /usr/local/bin/shellharden
-        ls -l /usr/local/bin/shellharden
-        file /usr/local/bin/shellharden
-
-    - name: Verify shellharden installation
-      run: |
-        /usr/local/bin/shellharden --version || true # Ensure workflow does not fail if shellharden fails
+        cargo install shellharden
+        mkdir -p ~/.local/bin
+        mv ~/.cargo/bin/shellharden ~/.local/bin/
+        echo "$PATH"
+        shellharden --version
 
     - name: Run shellharden
       run: |
         mkdir -p output
-        find . -name "*.sh" -print0 | xargs -0 /usr/local/bin/shellharden --check > output/shellharden_results.txt || true
+        find . -name "*.sh" -print0 | xargs -0 ~/.local/bin/shellharden --check > output/shellharden_results.txt || true
 
     - name: Upload shellharden Results
       uses: actions/upload-artifact@v4.3.1
