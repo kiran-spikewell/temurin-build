@@ -17,9 +17,10 @@ jobs:
     - name: Install ShellCheck
       run: sudo apt-get install -y shellcheck
 
-    - name: Run ShellCheck
+    - name: Run ShellCheck and Save Results
       run: |
-        find . -name "*.sh" -print0 | xargs -0 shellcheck -f gcc
+        mkdir -p output
+        find . -name "*.sh" -print0 | xargs -0 shellcheck -f json > output/results.sarif
 
     - name: Install shfmt
       run: |
@@ -33,7 +34,7 @@ jobs:
       run: |
         find . -name "*.sh" -print0 | xargs -0 shfmt -d || true
 
-    - name: Upload ShellCheck Results
-      uses: github/codeql-action/upload-sarif@v2
+    - name: Upload SARIF to GitHub Code Scanning
+      uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: results.sarif
+        sarif_file: output/results.sarif
