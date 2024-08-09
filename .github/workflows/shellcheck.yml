@@ -20,7 +20,13 @@ jobs:
     - name: Run ShellCheck and Save Results
       run: |
         mkdir -p output
-        find . -name "*.sh" -print0 | xargs -0 shellcheck -f json > output/results.sarif
+        find . -name "*.sh" -print0 | xargs -0 shellcheck -f json > output/results.json
+
+    - name: Install sarif-tools
+      run: npm install -g sarif-tools
+
+    - name: Convert ShellCheck JSON to SARIF
+      run: sarif-tools from-shellcheck -i output/results.json -o output/results.sarif
 
     - name: Install shfmt
       run: |
