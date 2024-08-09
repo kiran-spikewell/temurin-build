@@ -28,21 +28,23 @@ jobs:
         echo "$PATH"
         shellharden --version
 
+    - name: Create output directory
+      run: mkdir -p output
+
     - name: Debug directory contents
       run: |
         echo "Checking contents of the repository"
         ls -al
         echo "Checking contents of output directory"
-        ls -al output
+        ls -al output || echo "No files in output directory"
 
     - name: Run shellharden
       run: |
-        mkdir -p output
         echo "Running shellharden"
         find . -name "*.sh" -print0
         find . -name "*.sh" -print0 | xargs -0 ~/.local/bin/shellharden --check > output/shellharden_results.txt || true
         echo "Shellharden results:"
-        cat output/shellharden_results.txt
+        cat output/shellharden_results.txt || echo "No results found"
 
     - name: Upload shellharden Results
       uses: actions/upload-artifact@v4.3.1
