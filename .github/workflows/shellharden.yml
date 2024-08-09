@@ -13,28 +13,33 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v4.1.1
-    
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y curl
-        
-    - name: Install shellharden
+
+    - name: Download shellharden
       run: |
         curl -LO https://github.com/anordal/shellharden/releases/download/v4.0.0/shellharden-linux-x86_64
-        ls -l shellharden-linux-x86_64 # List the file to verify download
+        ls -l shellharden-linux-x86_64
+        file shellharden-linux-x86_64 # Check the file type to ensure it's correct
+
+    - name: Install shellharden
+      run: |
         chmod +x shellharden-linux-x86_64
         mv shellharden-linux-x86_64 /usr/local/bin/shellharden
-        ls -l /usr/local/bin/shellharden # Verify file placement and permissions
+        ls -l /usr/local/bin/shellharden
+        file /usr/local/bin/shellharden # Verify the installed binary type
 
     - name: Verify shellharden installation
       run: |
-        shellharden --version # Check if shellharden is executable and available
+        /usr/local/bin/shellharden --version
 
     - name: Run shellharden
       run: |
         mkdir -p output
-        find . -name "*.sh" -print0 | xargs -0 shellharden --check > output/shellharden_results.txt || true # Add || true to prevent failure if shellharden fails
+        find . -name "*.sh" -print0 | xargs -0 /usr/local/bin/shellharden --check > output/shellharden_results.txt || true
 
     - name: Upload shellharden Results
       uses: actions/upload-artifact@v4.3.1
