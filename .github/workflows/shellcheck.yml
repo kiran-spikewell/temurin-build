@@ -36,14 +36,14 @@ jobs:
                     "name": "ShellCheck",
                     "informationUri": "https://www.shellcheck.net/",
                     "version": "v0.7.2",
-                    "rules": $input.comments | map({
+                    "rules": $input | map({
                       "id": .code,
                       "shortDescription": {"text": .message},
-                      "helpUri": ("https://www.shellcheck.net/wiki/" + .code)
+                      "helpUri": ("https://www.shellcheck.net/wiki/SC" + (.code | tostring))
                     })
                   }
                 },
-                "results": $input.comments | map({
+                "results": $input | map({
                   "ruleId": .code,
                   "message": {"text": .message},
                   "locations": [
